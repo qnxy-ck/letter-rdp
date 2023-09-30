@@ -2,10 +2,16 @@ package com.ck;
 
 import com.ck.ast.*;
 import com.ck.token.NumberToken;
+import com.ck.token.SemicolonToken;
 import com.ck.token.StringToken;
 import com.ck.token.Token;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * 解析器 构建AST
+ * 
  * @author 陈坤
  * 2023/9/30
  */
@@ -28,12 +34,65 @@ public class Parser {
         return this.program();
     }
 
-
+    /*
+        Main entry point.
+        
+        Program
+            : StatementList
+            ;
+     */
     private ASTree program() {
         return new Program(
-                this.literal()
+                this.statementList()
         );
+    }
 
+
+    /*
+        StatementList
+            : Statement
+            | StatementList Statement -> Statement Statement Statement Statement
+            ;
+     */
+    private List<ASTree> statementList() {
+        final List<ASTree> statementList = new ArrayList<>();
+        statementList.add(this.statement());
+
+        while (this.lookahead != null) {
+            statementList.add(this.statement());
+        }
+
+        return statementList;
+    }
+
+    /*
+        Statement
+            : ExpressionStatement
+            ;
+     */
+    private Statement statement() {
+        return this.expressionStatement();
+    }
+
+    /*
+        ExpressionStatement
+            : Expression ';'
+            ;
+     */
+    private ExpressionStatement expressionStatement() {
+        ASTree expression = this.expression();
+        this.eat(SemicolonToken.class);
+
+        return new ExpressionStatement(expression);
+    }
+
+    /*
+        Expression
+            : Literal
+            ;
+     */
+    private ASTree expression() {
+        return this.literal();
     }
 
     /*

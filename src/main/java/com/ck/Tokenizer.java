@@ -1,6 +1,7 @@
 package com.ck;
 
 import com.ck.token.NumberToken;
+import com.ck.token.SemicolonToken;
 import com.ck.token.StringToken;
 import com.ck.token.Token;
 
@@ -14,6 +15,9 @@ import java.util.regex.Pattern;
  */
 public class Tokenizer {
 
+    /**
+     *  正则匹配规则
+     */
     private static final RegexpInfo[] TOKENIZER_SPEC_ARR = {
             // --------------------------------------------------
             // 空白字符:
@@ -22,11 +26,15 @@ public class Tokenizer {
             // --------------------------------------------------
             // 跳过单行注释
             new RegexpInfo(Pattern.compile("^//.*"), it -> null),
-            
+
             // 跳过多行注释
             new RegexpInfo(Pattern.compile("^/\\*[\\s\\S]*?\\*/"), it -> null),
+
+            // --------------------------------------------------
+            // 符号, 分隔符
+            new RegexpInfo(Pattern.compile("^;"), it -> SemicolonToken.INSTANCE),
             
-            
+
             // --------------------------------------------------
             // 数字:
             new RegexpInfo(Pattern.compile("^\\d+"), it -> new NumberToken(Integer.parseInt(it))),
@@ -35,8 +43,8 @@ public class Tokenizer {
             // 字符串:
             new RegexpInfo(Pattern.compile("^\"[^\"]*\""), StringToken::new),
             new RegexpInfo(Pattern.compile("^'[^']*'"), StringToken::new),
-            
-            
+
+
     };
 
 
@@ -56,6 +64,9 @@ public class Tokenizer {
         return this.cursor < this.string.length();
     }
 
+    /**
+     * 获取一个Token
+     */
     public Token<?> getNextToken() {
         if (!hasMoreTokens()) {
             return null;
@@ -70,7 +81,7 @@ public class Tokenizer {
             }
 
             this.cursor += tokenValue.length();
-            
+
             Token<?> token = regexpInfo.makeToken(tokenValue);
             if (token == null) {
                 return this.getNextToken();
