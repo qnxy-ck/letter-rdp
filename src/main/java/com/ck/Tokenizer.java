@@ -31,7 +31,15 @@ public class Tokenizer {
             // 符号, 分隔符
             new RegexpInfo(Pattern.compile("^;"), it -> SemicolonToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\{"), it -> OpenBraceToken.INSTANCE),
-            new RegexpInfo(Pattern.compile("^}"), it -> CloseBraceToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^}"), it -> ClosedBraceToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\("), it -> OpenParenthesisToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\)"), it -> ClosedParenthesisToken.INSTANCE),
+
+
+            // --------------------------------------------------
+            // 数学运算符: +, -, *, /
+            new RegexpInfo(Pattern.compile("^[+-]"), AdditiveOperatorToken::new),
+            new RegexpInfo(Pattern.compile("^[*/]"), MultiplicativeOperatorToken::new),
 
 
             // --------------------------------------------------

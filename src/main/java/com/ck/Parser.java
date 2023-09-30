@@ -5,6 +5,7 @@ import com.ck.token.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * 解析器 构建AST
@@ -55,11 +56,11 @@ public class Parser {
         return this.statementList(null);
     }
 
-    private List<ASTree> statementList(Token<?> stopLookahead) {
+    private List<ASTree> statementList(Class<? extends Token<?>> stopLookahead) {
         final List<ASTree> statementList = new ArrayList<>();
         statementList.add(this.statement());
 
-        while (this.lookahead != null && this.lookahead != stopLookahead) {
+        while (this.lookahead != null && this.lookahead.getClass() != stopLookahead) {
             statementList.add(this.statement());
         }
 
@@ -101,11 +102,11 @@ public class Parser {
     private BlockStatement blockStatement() {
         this.eat(OpenBraceToken.class);
 
-        final List<ASTree> body = this.lookahead.getClass() == CloseBraceToken.class
+        final List<ASTree> body = this.lookahead.getClass() == ClosedBraceToken.class
                 ? List.of()
-                : this.statementList(CloseBraceToken.INSTANCE);
+                : this.statementList(ClosedBraceToken.class);
 
-        this.eat(CloseBraceToken.class);
+        this.eat(ClosedBraceToken.class);
 
         return new BlockStatement(body);
     }
@@ -124,11 +125,75 @@ public class Parser {
 
     /*
         Expression
-            : Literal
+            : AdditiveExpression
             ;
      */
     private ASTree expression() {
-        return this.literal();
+        return this.additiveExpression();
+    }
+
+    /*
+        AdditiveExpression
+            : MultiplicativeExpression
+            | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
+            ;
+     */
+    private ASTree additiveExpression() {
+        return this.binaryExpression(this::multiplicativeExpression, AdditiveOperatorToken.class);
+    }
+
+    /*
+        MultiplicativeExpression
+            : PrimaryExpression
+            | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+            ;
+     */
+    private ASTree multiplicativeExpression() {
+        return this.binaryExpression(this::primaryExpression, MultiplicativeOperatorToken.class);
+    }
+
+    private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
+        ASTree left = builderMethod.get();
+
+        while (this.lookahead.getClass() == operatorTokenType) {
+            OperatorToken operator = this.eat(operatorTokenType);
+            ASTree right = builderMethod.get();
+
+            left = new BinaryExpression(
+                    operator.toBinaryOperator(),
+                    left,
+                    right
+            );
+        }
+
+        return left;
+    }
+
+    /*
+        PrimaryExpression
+            : Literal
+            | ParenthesizedExpression
+            ;
+     */
+    private ASTree primaryExpression() {
+        if (this.lookahead.getClass() == OpenParenthesisToken.class) {
+            return this.parenthesizedExpression();
+        } else {
+            return this.literal();
+        }
+    }
+
+    /*
+        ParenthesizedExpression
+            : '(' Expression ')'
+            ;
+     */
+    private ASTree parenthesizedExpression() {
+        this.eat(OpenParenthesisToken.class);
+        ASTree expression = this.expression();
+        this.eat(ClosedParenthesisToken.class);
+
+        return expression;
     }
 
     /*

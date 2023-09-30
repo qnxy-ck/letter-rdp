@@ -1,5 +1,7 @@
 package com.ck.token;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+
 /**
  * Token 抽象接口
  * 
@@ -8,6 +10,7 @@ package com.ck.token;
  */
 public interface Token<T> {
     
+    @JsonGetter
     T value();
     
 }
