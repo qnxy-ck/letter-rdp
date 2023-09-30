@@ -1,9 +1,7 @@
-x = 1;
-s += 2;
-a = (2 + 1) / 3;
-
-{
-    ;
-    x = 10;
-    x = y = 10;
-}
+let x = 12, y;
+let y;
+let x, y;
+let c, b = 20;
+let x = 29;
+r = 22;
+let name = username = "ck";

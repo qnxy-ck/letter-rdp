@@ -34,6 +34,11 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^}"), it -> ClosedBraceToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\("), it -> OpenParenthesisToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\)"), it -> ClosedParenthesisToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^,"), it -> CommaToken.INSTANCE),
+
+            // --------------------------------------------------
+            // 关键字
+            new RegexpInfo(Pattern.compile("^\\blet\\b"), it -> LetToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:

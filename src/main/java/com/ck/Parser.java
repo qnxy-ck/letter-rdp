@@ -72,6 +72,7 @@ public class Parser {
             : ExpressionStatement
             | BlockStatement
             | EmptyStatement
+            | VariableStatement
             ;
      */
     private Statement statement() {
@@ -79,9 +80,66 @@ public class Parser {
             return this.emptyStatement();
         } else if (this.lookahead.getClass() == OpenBraceToken.class) {
             return this.blockStatement();
+        } else if (this.lookahead.getClass() == LetToken.class) {
+            return this.variableStatement();
         } else {
             return this.expressionStatement();
         }
+    }
+
+    /*
+        VariableStatement
+            : 'let' VariableDeclarationList ';'
+            ;
+     */
+    private VariableStatement variableStatement() {
+        this.eat(LetToken.class);
+        List<ASTree> list = this.variableDeclarationList();
+        this.eat(SemicolonToken.class);
+
+        return new VariableStatement(list);
+    }
+
+    /*
+        VariableDeclarationList
+            : VariableDeclaration
+            | VariableDeclarationList ',' VariableDeclaration
+            ;
+     */
+    private List<ASTree> variableDeclarationList() {
+        List<ASTree> list = new ArrayList<>();
+        list.add(this.variableDeclaration());
+
+        while (this.lookahead.getClass() == CommaToken.class) {
+            this.eat(CommaToken.class);
+            list.add(this.variableDeclaration());
+        }
+        return list;
+    }
+
+    /*
+        VariableDeclaration
+            : Identifier OptVariableInitializer
+            ;
+     */
+    private ASTree variableDeclaration() {
+        Identifier id = this.identifier();
+
+        ASTree init = this.lookahead.getClass() != SemicolonToken.class && this.lookahead.getClass() != CommaToken.class
+                ? this.variableInitializer()
+                : null;
+
+        return new VariableDeclaration(id, init);
+    }
+
+    /*
+        VariableInitializer
+            : SIMPLE_ASSIGN assignmentExpression
+            ;
+     */
+    private ASTree variableInitializer() {
+        this.eat(SimpleAssignToken.class);
+        return this.assignmentExpression();
     }
 
     /*
@@ -158,7 +216,7 @@ public class Parser {
             : Identifier
             ;
      */
-    private ASTree leftHandSideExpression() {
+    private Identifier leftHandSideExpression() {
         return this.identifier();
     }
 
@@ -167,7 +225,7 @@ public class Parser {
             : IDENTIFIER
             ;
      */
-    private ASTree identifier() {
+    private Identifier identifier() {
         IdentifierToken token = this.eat(IdentifierToken.class);
         return new Identifier(token.value());
     }
