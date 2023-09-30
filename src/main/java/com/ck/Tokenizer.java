@@ -35,16 +35,24 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\("), it -> OpenParenthesisToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\)"), it -> ClosedParenthesisToken.INSTANCE),
 
+            // --------------------------------------------------
+            // 数字:
+            new RegexpInfo(Pattern.compile("^\\d+"), it -> new NumberToken(Integer.parseInt(it))),
+
+            // --------------------------------------------------
+            // 标识符
+            new RegexpInfo(Pattern.compile("^\\w+"), IdentifierToken::new),
+
+            // --------------------------------------------------
+            // 赋值运算符: =, *=, /=, +=. -=
+            new RegexpInfo(Pattern.compile("^="), it -> SimpleAssignToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^[*/+-]="), ComplexAssignToken::new),
+
 
             // --------------------------------------------------
             // 数学运算符: +, -, *, /
             new RegexpInfo(Pattern.compile("^[+-]"), AdditiveOperatorToken::new),
             new RegexpInfo(Pattern.compile("^[*/]"), MultiplicativeOperatorToken::new),
-
-
-            // --------------------------------------------------
-            // 数字:
-            new RegexpInfo(Pattern.compile("^\\d+"), it -> new NumberToken(Integer.parseInt(it))),
 
             // --------------------------------------------------
             // 字符串:

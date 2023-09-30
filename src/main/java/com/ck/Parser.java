@@ -129,7 +129,79 @@ public class Parser {
             ;
      */
     private ASTree expression() {
-        return this.additiveExpression();
+        return this.assignmentExpression();
+    }
+
+    /*
+        AssignmentExpression
+            : AdditiveExpression
+            | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
+            ;
+     */
+    private ASTree assignmentExpression() {
+        ASTree left = this.additiveExpression();
+
+        // 如果下一个Token不是赋值运算符直接返回
+        if (!this.isAssignmentOperator(this.lookahead.getClass())) {
+            return left;
+        }
+
+        return new AssignmentExpression(
+                this.assignmentOperator().toAssignmentOperator(),
+                this.checkValidAssignmentTarget(left),
+                this.assignmentExpression()
+        );
+    }
+
+    /*
+        LeftHandSideExpression
+            : Identifier
+            ;
+     */
+    private ASTree leftHandSideExpression() {
+        return this.identifier();
+    }
+
+    /*
+        Identifier
+            : IDENTIFIER
+            ;
+     */
+    private ASTree identifier() {
+        IdentifierToken token = this.eat(IdentifierToken.class);
+        return new Identifier(token.value());
+    }
+
+    /**
+     * 检查赋值运算符左侧是不是一个标识符
+     */
+    private ASTree checkValidAssignmentTarget(ASTree tree) {
+        if (tree instanceof Identifier) {
+            return tree;
+        }
+
+        throw new SyntaxException("Invalid left-hand side in assignment expression");
+    }
+
+    /*
+        AssignmentOperator
+            : SIMPLE_ASSIGN
+            | COMPLEX_ASSIGN
+            ;
+     */
+    private AssignToken assignmentOperator() {
+        if (this.lookahead.getClass() == SimpleAssignToken.class) {
+            return this.eat(SimpleAssignToken.class);
+        }
+
+        return this.eat(ComplexAssignToken.class);
+    }
+
+    /**
+     * 判断是否为赋值运算符
+     */
+    private boolean isAssignmentOperator(@SuppressWarnings("rawtypes") Class<? extends Token> tokenType) {
+        return tokenType == SimpleAssignToken.class || tokenType == ComplexAssignToken.class;
     }
 
     /*
@@ -152,6 +224,12 @@ public class Parser {
         return this.binaryExpression(this::primaryExpression, MultiplicativeOperatorToken.class);
     }
 
+    /**
+     * 构建二进制运算表达式
+     *
+     * @param builderMethod     方法名称
+     * @param operatorTokenType 运算符类型
+     */
     private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
         ASTree left = builderMethod.get();
 
@@ -173,14 +251,21 @@ public class Parser {
         PrimaryExpression
             : Literal
             | ParenthesizedExpression
+            | LeftHandSideExpression
             ;
      */
     private ASTree primaryExpression() {
-        if (this.lookahead.getClass() == OpenParenthesisToken.class) {
+        if (this.isLiteral(this.lookahead)) {
+            return this.literal();
+        } else if (this.lookahead.getClass() == OpenParenthesisToken.class) {
             return this.parenthesizedExpression();
         } else {
-            return this.literal();
+            return this.leftHandSideExpression();
         }
+    }
+
+    private boolean isLiteral(Token<?> lookahead) {
+        return lookahead.getClass() == NumberToken.class || lookahead.getClass() == StringToken.class;
     }
 
     /*
