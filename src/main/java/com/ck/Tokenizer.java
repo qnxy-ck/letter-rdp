@@ -1,9 +1,6 @@
 package com.ck;
 
-import com.ck.token.NumberToken;
-import com.ck.token.SemicolonToken;
-import com.ck.token.StringToken;
-import com.ck.token.Token;
+import com.ck.token.*;
 
 import java.util.regex.Pattern;
 
@@ -16,7 +13,7 @@ import java.util.regex.Pattern;
 public class Tokenizer {
 
     /**
-     *  正则匹配规则
+     * 正则匹配规则
      */
     private static final RegexpInfo[] TOKENIZER_SPEC_ARR = {
             // --------------------------------------------------
@@ -33,7 +30,9 @@ public class Tokenizer {
             // --------------------------------------------------
             // 符号, 分隔符
             new RegexpInfo(Pattern.compile("^;"), it -> SemicolonToken.INSTANCE),
-            
+            new RegexpInfo(Pattern.compile("^\\{"), it -> OpenBraceToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^}"), it -> CloseBraceToken.INSTANCE),
+
 
             // --------------------------------------------------
             // 数字:

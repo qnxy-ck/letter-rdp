@@ -1,17 +1,14 @@
 package com.ck;
 
 import com.ck.ast.*;
-import com.ck.token.NumberToken;
-import com.ck.token.SemicolonToken;
-import com.ck.token.StringToken;
-import com.ck.token.Token;
+import com.ck.token.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 解析器 构建AST
- * 
+ *
  * @author 陈坤
  * 2023/9/30
  */
@@ -55,10 +52,14 @@ public class Parser {
             ;
      */
     private List<ASTree> statementList() {
+        return this.statementList(null);
+    }
+
+    private List<ASTree> statementList(Token<?> stopLookahead) {
         final List<ASTree> statementList = new ArrayList<>();
         statementList.add(this.statement());
 
-        while (this.lookahead != null) {
+        while (this.lookahead != null && this.lookahead != stopLookahead) {
             statementList.add(this.statement());
         }
 
@@ -68,10 +69,45 @@ public class Parser {
     /*
         Statement
             : ExpressionStatement
+            | BlockStatement
+            | EmptyStatement
             ;
      */
     private Statement statement() {
-        return this.expressionStatement();
+        if (this.lookahead.getClass() == SemicolonToken.class) {
+            return this.emptyStatement();
+        } else if (this.lookahead.getClass() == OpenBraceToken.class) {
+            return this.blockStatement();
+        } else {
+            return this.expressionStatement();
+        }
+    }
+
+    /*
+        EmptyStatement
+            : ';'
+            ;
+     */
+    private EmptyStatement emptyStatement() {
+        this.eat(SemicolonToken.class);
+        return EmptyStatement.INSTANCE;
+    }
+
+    /*
+        BlockStatement
+            : '{' OptStatementList '}'
+            ;
+     */
+    private BlockStatement blockStatement() {
+        this.eat(OpenBraceToken.class);
+
+        final List<ASTree> body = this.lookahead.getClass() == CloseBraceToken.class
+                ? List.of()
+                : this.statementList(CloseBraceToken.INSTANCE);
+
+        this.eat(CloseBraceToken.class);
+
+        return new BlockStatement(body);
     }
 
     /*
@@ -102,11 +138,9 @@ public class Parser {
             ;
      */
     private Literal literal() {
-        @SuppressWarnings("rawtypes") Class<? extends Token> lookaheadClass = this.lookahead.getClass();
-
-        if (lookaheadClass == NumberToken.class) {
+        if (this.lookahead.getClass() == NumberToken.class) {
             return this.numericLiteral();
-        } else if (lookaheadClass == StringToken.class) {
+        } else if (this.lookahead.getClass() == StringToken.class) {
             return this.stringLiteral();
         }
 
