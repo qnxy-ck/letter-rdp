@@ -4,7 +4,7 @@ import com.ck.ast.Literal;
 
 /**
  * 字符字面量
- * 
+ *
  * @author 陈坤
  * 2023/9/30
  */

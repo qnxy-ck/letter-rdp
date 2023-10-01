@@ -1,6 +1,5 @@
 package com.ck.token.operator;
 
-import com.ck.ast.operator.MultiplicativeOperator;
 import com.ck.token.OperatorToken;
 
 /**
@@ -9,11 +8,22 @@ import com.ck.token.OperatorToken;
  * @author 陈坤
  * 2023/10/1
  */
-public record MultiplicativeOperatorToken(String value) implements OperatorToken<MultiplicativeOperator> {
+public enum MultiplicativeOperatorToken implements OperatorToken {
+
+    MULTIPLICATION("*"),
+    DIVISION("/"),
+    ;
+
+    private final String operator;
+
+    MultiplicativeOperatorToken(String operator) {
+        this.operator = operator;
+    }
+
 
     @Override
-    public MultiplicativeOperator toOperatorEnum() {
-        return MultiplicativeOperator.operatorOf(this.value()).orElseThrow();
+    public String value() {
+        return this.operator;
     }
-    
+
 }

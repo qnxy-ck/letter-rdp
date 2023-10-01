@@ -3,7 +3,6 @@ package com.ck;
 import com.ck.ast.*;
 import com.ck.ast.literal.*;
 import com.ck.ast.statement.*;
-import com.ck.token.AssignToken;
 import com.ck.token.OperatorToken;
 import com.ck.token.Token;
 import com.ck.token.keyword.*;
@@ -246,7 +245,7 @@ public class Parser {
         }
 
         return new AssignmentExpression(
-                this.assignmentOperator().toOperatorEnum(),
+                this.assignmentOperator(),
                 this.checkValidAssignmentTarget(left),
                 this.assignmentExpression()
         );
@@ -288,7 +287,7 @@ public class Parser {
             | COMPLEX_ASSIGN
             ;
      */
-    private AssignToken assignmentOperator() {
+    private OperatorToken assignmentOperator() {
         if (this.lookahead.getClass() == SimpleAssignToken.class) {
             return this.eat(SimpleAssignToken.class);
         }
@@ -346,18 +345,18 @@ public class Parser {
     /**
      * 构建二进制运算表达式
      *
-     * @param builderMethod     方法名称
+     * @param builderMethod     构建数据
      * @param operatorTokenType 运算符类型
      */
-    private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken<? extends Operator>> operatorTokenType) {
+    private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
         ASTree left = builderMethod.get();
 
         while (this.lookahead.getClass() == operatorTokenType) {
-            OperatorToken<?> operator = this.eat(operatorTokenType);
+            OperatorToken operator = this.eat(operatorTokenType);
             ASTree right = builderMethod.get();
 
             left = new BinaryExpression(
-                    operator.toOperatorEnum(),
+                    operator,
                     left,
                     right
             );

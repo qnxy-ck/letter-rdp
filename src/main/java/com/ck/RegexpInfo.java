@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 /**
  * 正则匹配信息
- * 
+ *
  * @author 陈坤
  * 2023/9/30
  */
@@ -25,7 +25,7 @@ public record RegexpInfo(
 
         return null;
     }
-    
+
     public Token<?> makeToken(String tokenValue) {
         return this.token.apply(tokenValue);
     }

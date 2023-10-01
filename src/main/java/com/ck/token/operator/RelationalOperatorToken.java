@@ -1,6 +1,5 @@
 package com.ck.token.operator;
 
-import com.ck.ast.operator.RelationalOperator;
 import com.ck.token.OperatorToken;
 
 /**
@@ -13,10 +12,22 @@ import com.ck.token.OperatorToken;
  * @author 陈坤
  * 2023/10/1
  */
-public record RelationalOperatorToken(String value) implements OperatorToken<RelationalOperator> {
+public enum RelationalOperatorToken implements OperatorToken {
+
+    LT("<"),
+    LE("<="),
+    GT(">"),
+    GE(">="),
+
+    ;
+    private final String operator;
+
+    RelationalOperatorToken(String operator) {
+        this.operator = operator;
+    }
 
     @Override
-    public RelationalOperator toOperatorEnum() {
-        return RelationalOperator.operatorOf(this.value()).orElseThrow();
+    public String value() {
+        return this.operator;
     }
 }

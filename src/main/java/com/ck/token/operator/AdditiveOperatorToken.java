@@ -1,6 +1,5 @@
 package com.ck.token.operator;
 
-import com.ck.ast.operator.AdditiveOperator;
 import com.ck.token.OperatorToken;
 
 /**
@@ -9,11 +8,21 @@ import com.ck.token.OperatorToken;
  * @author 陈坤
  * 2023/10/1
  */
-public record AdditiveOperatorToken(String value) implements OperatorToken<AdditiveOperator> {
+public enum AdditiveOperatorToken implements OperatorToken {
+
+    ADDITION("+"),
+    SUBTRACTION("-"),
+    ;
+
+    private final String operator;
+
+    AdditiveOperatorToken(String operator) {
+        this.operator = operator;
+    }
 
     @Override
-    public AdditiveOperator toOperatorEnum() {
-        return AdditiveOperator.operatorOf(this.value()).orElseThrow();
+    public String value() {
+        return this.operator;
     }
-    
+
 }

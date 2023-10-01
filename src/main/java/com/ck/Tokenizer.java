@@ -10,6 +10,8 @@ import com.ck.token.symbol.*;
 
 import java.util.regex.Pattern;
 
+import static com.ck.token.OperatorToken.toBuilder;
+
 /**
  * 词法解析器
  *
@@ -61,23 +63,23 @@ public class Tokenizer {
 
             // --------------------------------------------------
             // 等式运算符: ==. !=
-            new RegexpInfo(Pattern.compile("^[=!]="), EqualityOperatorToken::new),
-            
+            new RegexpInfo(Pattern.compile("^[=!]="), it -> toBuilder(EqualityOperatorToken.values(), it)),
+
 
             // --------------------------------------------------
             // 赋值运算符: =, *=, /=, +=. -=
             new RegexpInfo(Pattern.compile("^="), it -> SimpleAssignToken.INSTANCE),
-            new RegexpInfo(Pattern.compile("^[*/+-]="), ComplexAssignToken::new),
+            new RegexpInfo(Pattern.compile("^[*/+-]="), it -> toBuilder(ComplexAssignToken.values(), it)),
 
 
             // --------------------------------------------------
             // 数学运算符: +, -, *, /
-            new RegexpInfo(Pattern.compile("^[+-]"), AdditiveOperatorToken::new),
-            new RegexpInfo(Pattern.compile("^[*/]"), MultiplicativeOperatorToken::new),
+            new RegexpInfo(Pattern.compile("^[+-]"), it -> toBuilder(AdditiveOperatorToken.values(), it)),
+            new RegexpInfo(Pattern.compile("^[*/]"), it -> toBuilder(MultiplicativeOperatorToken.values(), it)),
 
             // --------------------------------------------------
             // 关系运算符 >, >=, <, <=
-            new RegexpInfo(Pattern.compile("^[><]=?"), RelationalOperatorToken::new),
+            new RegexpInfo(Pattern.compile("^[><]=?"), it -> toBuilder(RelationalOperatorToken.values(), it)),
 
 
             // --------------------------------------------------

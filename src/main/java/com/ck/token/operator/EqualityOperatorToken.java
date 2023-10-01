@@ -1,6 +1,5 @@
 package com.ck.token.operator;
 
-import com.ck.ast.operator.EqualityOperator;
 import com.ck.token.OperatorToken;
 
 /**
@@ -11,11 +10,21 @@ import com.ck.token.OperatorToken;
  * @author 陈坤
  * 2023/10/1
  */
-public record EqualityOperatorToken(String value) implements OperatorToken<EqualityOperator> {
+public enum EqualityOperatorToken implements OperatorToken {
+
+    EQUALITY("=="),
+    NOT_EQUALITY("!="),
+    ;
+
+    private final String operator;
+
+    EqualityOperatorToken(String operator) {
+        this.operator = operator;
+    }
 
     @Override
-    public EqualityOperator toOperatorEnum() {
-        return EqualityOperator.operatorOf(this.value()).orElseThrow();
+    public String value() {
+        return this.operator;
     }
 
 }

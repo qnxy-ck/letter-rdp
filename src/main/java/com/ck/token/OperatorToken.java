@@ -1,13 +1,17 @@
 package com.ck.token;
 
-import com.ck.ast.Operator;
+import java.util.Arrays;
 
 /**
  * @author 陈坤
  * 2023/10/1
  */
-public interface OperatorToken<T extends Operator> extends Token<String> {
+public interface OperatorToken extends Token<String> {
 
-    T toOperatorEnum();
-
+    static <T extends Enum<T> & OperatorToken> T toBuilder(T[] v, String operator) {
+        return Arrays.stream(v)
+                .filter(it -> it.value().equals(operator))
+                .findFirst()
+                .orElseThrow();
+    }
 }

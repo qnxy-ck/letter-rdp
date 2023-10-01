@@ -1,6 +1,6 @@
 package com.ck.token.operator;
 
-import com.ck.token.AssignToken;
+import com.ck.token.OperatorToken;
 
 /**
  * 复杂赋值运算符
@@ -12,5 +12,23 @@ import com.ck.token.AssignToken;
  * @author 陈坤
  * 2023/10/1
  */
-public record ComplexAssignToken(String value) implements AssignToken {
+public enum ComplexAssignToken implements OperatorToken {
+
+    MUL_ASSIGN("*="),
+    DIV_ASSIGN("/="),
+    ADD_ASSIGN("+="),
+    SUB_ASSIGN("-="),
+
+    ;
+    private final String operator;
+
+    ComplexAssignToken(String operator) {
+        this.operator = operator;
+    }
+
+    @Override
+    public String value() {
+        return this.operator;
+    }
+
 }
