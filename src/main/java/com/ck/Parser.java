@@ -589,11 +589,80 @@ public class Parser {
 
     /*
        LeftHandSideExpression
-           : MemberExpression
+           : CallMemberExpression
            ;
     */
     private ASTree leftHandSideExpression() {
-        return this.memberExpression();
+        return this.callMemberExpression();
+    }
+
+    /*
+        CallMemberExpression
+            : MemberExpression
+            | CallExpression
+            ;
+     */
+    private ASTree callMemberExpression() {
+        ASTree member = this.memberExpression();
+
+        if (this.lookaheadEq(OpenParenthesisToken.class)) {
+            return this.callExpression(member);
+        }
+
+        return member;
+    }
+
+    /*
+        CallExpression
+            : Callee Arguments
+            ;
+        
+        Callee
+            : MemberExpression
+            | CallExpression
+            ;
+     */
+    private ASTree callExpression(ASTree callee) {
+        ASTree callExpression = new CallExpression(callee, this.arguments());
+
+        if (this.lookaheadEq(OpenParenthesisToken.class)) {
+            callExpression = this.callExpression(callExpression);
+        }
+
+        return callExpression;
+    }
+
+    /*
+        Arguments
+            : '(' OptArgumentList ')'
+            ;
+     */
+    private List<ASTree> arguments() {
+        this.eat(OpenParenthesisToken.class);
+
+        List<ASTree> argumentList = this.lookaheadEq(ClosedParenthesisToken.class) ? List.of() : this.argumentList();
+
+        this.eat(ClosedParenthesisToken.class);
+
+        return argumentList;
+    }
+
+    /*
+        ArgumentList
+            : AssignmentExpression
+            | ArgumentList ',' AssignmentExpression
+            ;
+     */
+    private List<ASTree> argumentList() {
+        var argumentList = new ArrayList<ASTree>();
+        argumentList.add(this.assignmentExpression());
+
+        while (this.lookaheadEq(CommaToken.class)) {
+            this.eat(CommaToken.class);
+            argumentList.add(this.assignmentExpression());
+        }
+
+        return argumentList;
     }
 
     /*

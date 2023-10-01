@@ -10,3 +10,9 @@ while(i < s.length) {
 a.b.c[d];
 
 a.x = 10;
+
+test();
+
+obj.test(x, y);
+
+call(x)();
