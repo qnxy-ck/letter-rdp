@@ -3,9 +3,11 @@ package com.ck;
 import com.ck.ast.*;
 import com.ck.ast.literal.*;
 import com.ck.ast.statement.*;
-import com.ck.token.OperatorToken;
-import com.ck.token.Token;
-import com.ck.token.keyword.*;
+import com.ck.token.*;
+import com.ck.token.keyword.ElseToken;
+import com.ck.token.keyword.IfToken;
+import com.ck.token.keyword.LetToken;
+import com.ck.token.keyword.NullToken;
 import com.ck.token.literal.IdentifierToken;
 import com.ck.token.literal.NumberToken;
 import com.ck.token.literal.StringToken;
@@ -24,7 +26,6 @@ import java.util.function.Supplier;
  */
 public class Parser {
 
-
     private final Tokenizer tokenizer;
     private Token<?> lookahead;
 
@@ -35,7 +36,6 @@ public class Parser {
 
     public ASTree parse(String string) {
         this.tokenizer.init(string);
-
         this.lookahead = this.tokenizer.getNextToken();
 
         return this.program();
@@ -232,20 +232,20 @@ public class Parser {
 
     /*
         AssignmentExpression
-            : EqualityExpression
+            : LogicalOrExpression
             | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
             ;
      */
     private ASTree assignmentExpression() {
-        ASTree left = this.equalityExpression();
+        ASTree left = this.logicalOrExpression();
 
         // 如果下一个Token不是赋值运算符直接返回
-        if (!this.isAssignmentOperator(this.lookahead.getClass())) {
+        if (!(this.lookahead instanceof AssignToken)) {
             return left;
         }
 
         return new AssignmentExpression(
-                this.assignmentOperator(),
+                this.eat(AssignToken.class),
                 this.checkValidAssignmentTarget(left),
                 this.assignmentExpression()
         );
@@ -282,30 +282,39 @@ public class Parser {
     }
 
     /*
-        AssignmentOperator
-            : SIMPLE_ASSIGN
-            | COMPLEX_ASSIGN
+        Logical OR expression.
+        x || y
+        
+        LogicalOrExpression
+            : LogicalAndExpression 
+            | LogicalOrExpression LOGICAL_OR LogicalAndExpression
             ;
      */
-    private OperatorToken assignmentOperator() {
-        if (this.lookahead.getClass() == SimpleAssignToken.class) {
-            return this.eat(SimpleAssignToken.class);
-        }
-
-        return this.eat(ComplexAssignToken.class);
-    }
-
-    /**
-     * 判断是否为赋值运算符
-     */
-    private boolean isAssignmentOperator(@SuppressWarnings("rawtypes") Class<? extends Token> tokenType) {
-        return tokenType == SimpleAssignToken.class || tokenType == ComplexAssignToken.class;
+    private ASTree logicalOrExpression() {
+        return this.logicalExpression(this::logicalAndExpression, LogicalOrToken.class);
     }
 
     /*
+       Logical AND expression.
+       x && y
+        
+       LogicalAndExpression
+           : EqualityExpression
+           | LogicalAndExpression LOGICAL_AND EqualityExpression
+           ;
+    */
+    private ASTree logicalAndExpression() {
+        return this.logicalExpression(this::equalityExpression, LogicalAndToken.class);
+    }
+
+    /*
+        EQUALITY_OPERATOR: ==, !=
+        x == y
+        x != y
+        
         EqualityExpression
             : RelationalExpression
-            | RelationalExpression ADDITIVE_OPERATOR EqualityExpression
+            | EqualityExpression ADDITIVE_OPERATOR RelationalExpression
             ;
      */
     private ASTree equalityExpression() {
@@ -313,9 +322,15 @@ public class Parser {
     }
 
     /*
+        RELATIONAL_OPERATOR: >, >=, <, <=
+        x > y
+        x >= y
+        x < y
+        x <= y
+        
         RelationalExpression
             : AdditiveExpression
-            | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
+            | RelationalExpression RELATIONAL_OPERATOR AdditiveExpression
             ;
      */
     private ASTree relationalExpression() {
@@ -365,6 +380,29 @@ public class Parser {
         return left;
     }
 
+    /**
+     * 构建二进制运算表达式
+     *
+     * @param builderMethod     构建数据
+     * @param operatorTokenType 运算符类型
+     */
+    private ASTree logicalExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
+        ASTree left = builderMethod.get();
+
+        while (this.lookahead.getClass() == operatorTokenType) {
+            OperatorToken operator = this.eat(operatorTokenType);
+            ASTree right = builderMethod.get();
+
+            left = new LogicalExpression(
+                    operator,
+                    left,
+                    right
+            );
+        }
+
+        return left;
+    }
+
     /*
         PrimaryExpression
             : Literal
@@ -373,22 +411,12 @@ public class Parser {
             ;
      */
     private ASTree primaryExpression() {
-        if (this.isLiteral(this.lookahead)) {
+        if (this.lookahead instanceof LiteralToken<?>) {
             return this.literal();
         } else if (this.lookahead.getClass() == OpenParenthesisToken.class) {
             return this.parenthesizedExpression();
-        } else {
-            return this.leftHandSideExpression();
         }
-    }
-
-    private boolean isLiteral(Token<?> lookahead) {
-        return lookahead.getClass() == NumberToken.class
-                || lookahead.getClass() == StringToken.class
-                || lookahead.getClass() == TrueToken.class
-                || lookahead.getClass() == FalseToken.class
-                || lookahead.getClass() == NullToken.class
-                ;
+        return this.leftHandSideExpression();
     }
 
     /*
@@ -413,14 +441,12 @@ public class Parser {
             ;
      */
     private Literal literal() {
-        if (this.lookahead.getClass() == NumberToken.class) {
+        if (this.lookahead instanceof BooleanLiteralToken) {
+            return this.booleanLiteral(this.eat(BooleanLiteralToken.class).value());
+        } else if (this.lookahead.getClass() == NumberToken.class) {
             return this.numericLiteral();
         } else if (this.lookahead.getClass() == StringToken.class) {
             return this.stringLiteral();
-        } else if (this.lookahead.getClass() == TrueToken.class) {
-            return this.booleanLiteral(true);
-        } else if (this.lookahead.getClass() == FalseToken.class) {
-            return this.booleanLiteral(false);
         } else if (this.lookahead.getClass() == NullToken.class) {
             return this.nullLiteral();
         }
@@ -428,12 +454,21 @@ public class Parser {
         throw new SyntaxException("Literal: unexpected literal production");
     }
 
+    /*
+        BooleanLiteral
+            : 'true'
+            | 'false'
+            ;
+     */
     private Literal booleanLiteral(boolean b) {
-        Class<? extends Token<Boolean>> tokenType = b ? TrueToken.class : FalseToken.class;
-        this.eat(tokenType);
         return new BooleanLiteral(b);
     }
 
+    /*
+        NullLiteral
+            : 'null'
+            ;
+     */
     private Literal nullLiteral() {
         this.eat(NullToken.class);
         return new NullLiteral(null);

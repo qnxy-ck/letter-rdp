@@ -1,6 +1,6 @@
 package com.ck.token.keyword;
 
-import com.ck.token.Token;
+import com.ck.token.BooleanLiteralToken;
 
 /**
  * false
@@ -8,7 +8,7 @@ import com.ck.token.Token;
  * @author 陈坤
  * 2023/10/1
  */
-public class FalseToken implements Token<Boolean> {
+public class FalseToken implements BooleanLiteralToken {
 
     public static final FalseToken INSTANCE = new FalseToken();
 

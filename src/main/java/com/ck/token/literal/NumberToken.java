@@ -1,6 +1,6 @@
 package com.ck.token.literal;
 
-import com.ck.token.Token;
+import com.ck.token.LiteralToken;
 
 /**
  * 数值Token
@@ -10,6 +10,6 @@ import com.ck.token.Token;
  */
 public record NumberToken(
         Integer value
-) implements Token<Integer> {
+) implements LiteralToken<Integer> {
 
 }

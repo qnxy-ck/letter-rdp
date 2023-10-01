@@ -1,6 +1,6 @@
 package com.ck.token.keyword;
 
-import com.ck.token.Token;
+import com.ck.token.BooleanLiteralToken;
 
 /**
  * true
@@ -8,7 +8,7 @@ import com.ck.token.Token;
  * @author 陈坤
  * 2023/10/1
  */
-public class TrueToken implements Token<Boolean> {
+public class TrueToken implements BooleanLiteralToken {
 
     public static final TrueToken INSTANCE = new TrueToken();
 

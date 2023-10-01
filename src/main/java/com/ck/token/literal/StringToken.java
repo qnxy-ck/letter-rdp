@@ -1,6 +1,6 @@
 package com.ck.token.literal;
 
-import com.ck.token.Token;
+import com.ck.token.LiteralToken;
 
 /**
  * 字符串Token
@@ -10,5 +10,5 @@ import com.ck.token.Token;
  */
 public record StringToken(
         String value
-) implements Token<String> {
+) implements LiteralToken<String> {
 }

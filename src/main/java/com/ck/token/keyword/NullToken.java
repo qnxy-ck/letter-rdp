@@ -1,6 +1,6 @@
 package com.ck.token.keyword;
 
-import com.ck.token.Token;
+import com.ck.token.LiteralToken;
 
 /**
  * null
@@ -8,7 +8,7 @@ import com.ck.token.Token;
  * @author 陈坤
  * 2023/10/1
  */
-public class NullToken implements Token<String> {
+public class NullToken implements LiteralToken<String> {
 
     public static final NullToken INSTANCE = new NullToken();
 

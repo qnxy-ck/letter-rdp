@@ -81,6 +81,11 @@ public class Tokenizer {
             // 关系运算符 >, >=, <, <=
             new RegexpInfo(Pattern.compile("^[><]=?"), it -> toBuilder(RelationalOperatorToken.values(), it)),
 
+            // --------------------------------------------------
+            // 逻辑运算符 &&, ||
+            new RegexpInfo(Pattern.compile("^&&"), it -> LogicalAndToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\|\\| "), it -> LogicalOrToken.INSTANCE),
+
 
             // --------------------------------------------------
             // 字符串:

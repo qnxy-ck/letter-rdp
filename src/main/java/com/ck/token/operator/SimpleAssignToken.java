@@ -1,6 +1,6 @@
 package com.ck.token.operator;
 
-import com.ck.token.OperatorToken;
+import com.ck.token.AssignToken;
 
 /**
  * 简单赋值运算符
@@ -9,7 +9,7 @@ import com.ck.token.OperatorToken;
  * @author 陈坤
  * 2023/10/1
  */
-public class SimpleAssignToken implements OperatorToken {
+public class SimpleAssignToken implements AssignToken {
 
     public static final SimpleAssignToken INSTANCE = new SimpleAssignToken();
 
