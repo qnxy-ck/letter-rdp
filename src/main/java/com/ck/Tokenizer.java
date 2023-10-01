@@ -43,6 +43,9 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\("), it -> OpenParenthesisToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\)"), it -> ClosedParenthesisToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^,"), it -> CommaToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\."), it -> DotToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\["), it -> OpenSquareBracketsToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^]"), it -> ClosedSquareBracketsToken.INSTANCE),
 
             // --------------------------------------------------
             // 关键字

@@ -1,6 +1,6 @@
 package com.ck.ast;
 
-import com.ck.token.OperatorToken;
+import com.ck.token.AssignToken;
 
 /**
  * 赋值表达式
@@ -9,7 +9,7 @@ import com.ck.token.OperatorToken;
  * 2023/10/1
  */
 public record AssignmentExpression(
-        OperatorToken operator,
+        AssignToken operator,
         ASTree left,
         ASTree right
 ) implements ASTree {

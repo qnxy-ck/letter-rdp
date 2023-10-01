@@ -1,6 +1,12 @@
+let s = "test";
 
-
-
-def f(x, y, z) {
-    
+let i = 0;
+while(i < s.length) {
+    s[i];
+    // da
+    i += 1;
 }
+
+a.b.c[d];
+
+a.x = 10;

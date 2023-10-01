@@ -433,7 +433,7 @@ public class Parser {
      * 检查赋值运算符左侧是不是一个标识符
      */
     private ASTree checkValidAssignmentTarget(ASTree tree) {
-        if (tree instanceof Identifier) {
+        if (tree instanceof Identifier || tree instanceof MemberExpression) {
             return tree;
         }
 
@@ -589,11 +589,51 @@ public class Parser {
 
     /*
        LeftHandSideExpression
-           : PrimaryExpression
+           : MemberExpression
            ;
     */
     private ASTree leftHandSideExpression() {
-        return this.primaryExpression();
+        return this.memberExpression();
+    }
+
+    /*
+        MemberExpression
+            : PrimaryExpression
+            | MemberExpression '.' Identifier
+            | MemberExpression '[' Expression ']'
+            ;
+     */
+    private ASTree memberExpression() {
+        var object = this.primaryExpression();
+
+        while (this.lookaheadEq(DotToken.class) || this.lookaheadEq(OpenSquareBracketsToken.class)) {
+
+            if (this.lookaheadEq(DotToken.class)) {
+                this.eat(DotToken.class);
+                Identifier property = this.identifier();
+
+                object = new MemberExpression(
+                        false,
+                        object,
+                        property
+                );
+
+            }
+
+            if (this.lookaheadEq(OpenSquareBracketsToken.class)) {
+                this.eat(OpenSquareBracketsToken.class);
+                ASTree property = this.expression();
+                this.eat(ClosedSquareBracketsToken.class);
+
+                object = new MemberExpression(
+                        true,
+                        object,
+                        property
+                );
+            }
+        }
+
+        return object;
     }
 
 
@@ -692,14 +732,14 @@ public class Parser {
     }
 
     private <T extends Token<?>> boolean lookaheadEq(Class<T> tokenType) {
-        return lookahead.getClass() == tokenType;
+        return this.lookahead.getClass() == tokenType;
     }
 
     private <T extends Token<?>> T eat(Class<T> tokenType) {
         final Token<?> token = this.lookahead;
 
         if (token == null) {
-            throw new SyntaxException("Unexpected end of input, expected: " + tokenType);
+            throw new SyntaxException("Unexpected end of input, expected: " + tokenType.getSimpleName());
         }
 
         if (!tokenType.isInstance(token)) {
