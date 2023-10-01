@@ -1,9 +1,7 @@
 package com.ck;
 
 import com.ck.token.Token;
-import com.ck.token.keyword.ElseToken;
-import com.ck.token.keyword.IfToken;
-import com.ck.token.keyword.LetToken;
+import com.ck.token.keyword.*;
 import com.ck.token.literal.IdentifierToken;
 import com.ck.token.literal.NumberToken;
 import com.ck.token.literal.StringToken;
@@ -49,6 +47,9 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\blet\\b"), it -> LetToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bif\\b"), it -> IfToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\belse\\b"), it -> ElseToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\btrue\\b"), it -> TrueToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bfalse\\b"), it -> FalseToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bnull\\b"), it -> NullToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:
@@ -57,6 +58,11 @@ public class Tokenizer {
             // --------------------------------------------------
             // 标识符
             new RegexpInfo(Pattern.compile("^\\w+"), IdentifierToken::new),
+
+            // --------------------------------------------------
+            // 等式运算符: ==. !=
+            new RegexpInfo(Pattern.compile("^[=!]="), EqualityOperatorToken::new),
+            
 
             // --------------------------------------------------
             // 赋值运算符: =, *=, /=, +=. -=

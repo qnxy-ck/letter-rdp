@@ -9,21 +9,19 @@ import java.util.Optional;
  * @author 陈坤
  * 2023/10/1
  */
-public enum BinaryOperator implements Operator {
+public enum MultiplicativeOperator implements Operator {
 
-    ADDITION("+"),
-    SUBTRACTION("-"),
     MULTIPLICATION("*"),
     DIVISION("/"),
     ;
 
     private final String operator;
 
-    BinaryOperator(String operator) {
+    MultiplicativeOperator(String operator) {
         this.operator = operator;
     }
 
-    public static Optional<BinaryOperator> operatorOf(String operator) {
+    public static Optional<MultiplicativeOperator> operatorOf(String operator) {
         return Arrays.stream(values())
                 .filter(it -> it.operator.equals(operator))
                 .findFirst();

@@ -4,13 +4,15 @@ import com.ck.ast.operator.AssignmentOperator;
 
 /**
  * 赋值运算符 抽象接口
- * 
+ *
  * @author 陈坤
  * 2023/10/1
  */
-public interface AssignToken extends Token<String> {
+public interface AssignToken extends OperatorToken<AssignmentOperator> {
 
-    default AssignmentOperator toAssignmentOperator() {
+    @Override
+    default AssignmentOperator toOperatorEnum() {
         return AssignmentOperator.operatorOf(this.value()).orElseThrow();
     }
+
 }

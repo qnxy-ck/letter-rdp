@@ -1,16 +1,12 @@
 package com.ck;
 
 import com.ck.ast.*;
-import com.ck.ast.literal.Identifier;
-import com.ck.ast.literal.NumericLiteral;
-import com.ck.ast.literal.StringLiteral;
+import com.ck.ast.literal.*;
 import com.ck.ast.statement.*;
 import com.ck.token.AssignToken;
 import com.ck.token.OperatorToken;
 import com.ck.token.Token;
-import com.ck.token.keyword.ElseToken;
-import com.ck.token.keyword.IfToken;
-import com.ck.token.keyword.LetToken;
+import com.ck.token.keyword.*;
 import com.ck.token.literal.IdentifierToken;
 import com.ck.token.literal.NumberToken;
 import com.ck.token.literal.StringToken;
@@ -237,12 +233,12 @@ public class Parser {
 
     /*
         AssignmentExpression
-            : RelationalExpression
+            : EqualityExpression
             | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
             ;
      */
     private ASTree assignmentExpression() {
-        ASTree left = this.relationalExpression();
+        ASTree left = this.equalityExpression();
 
         // 如果下一个Token不是赋值运算符直接返回
         if (!this.isAssignmentOperator(this.lookahead.getClass())) {
@@ -250,7 +246,7 @@ public class Parser {
         }
 
         return new AssignmentExpression(
-                this.assignmentOperator().toAssignmentOperator(),
+                this.assignmentOperator().toOperatorEnum(),
                 this.checkValidAssignmentTarget(left),
                 this.assignmentExpression()
         );
@@ -305,6 +301,16 @@ public class Parser {
      */
     private boolean isAssignmentOperator(@SuppressWarnings("rawtypes") Class<? extends Token> tokenType) {
         return tokenType == SimpleAssignToken.class || tokenType == ComplexAssignToken.class;
+    }
+
+    /*
+        EqualityExpression
+            : RelationalExpression
+            | RelationalExpression ADDITIVE_OPERATOR EqualityExpression
+            ;
+     */
+    private ASTree equalityExpression() {
+        return this.binaryExpression(this::relationalExpression, EqualityOperatorToken.class);
     }
 
     /*
@@ -378,7 +384,12 @@ public class Parser {
     }
 
     private boolean isLiteral(Token<?> lookahead) {
-        return lookahead.getClass() == NumberToken.class || lookahead.getClass() == StringToken.class;
+        return lookahead.getClass() == NumberToken.class
+                || lookahead.getClass() == StringToken.class
+                || lookahead.getClass() == TrueToken.class
+                || lookahead.getClass() == FalseToken.class
+                || lookahead.getClass() == NullToken.class
+                ;
     }
 
     /*
@@ -398,6 +409,8 @@ public class Parser {
         Literal
             : NumericLiteral
             | StringLiteral
+            | BooleanLiteral
+            | NullLiteral
             ;
      */
     private Literal literal() {
@@ -405,9 +418,26 @@ public class Parser {
             return this.numericLiteral();
         } else if (this.lookahead.getClass() == StringToken.class) {
             return this.stringLiteral();
+        } else if (this.lookahead.getClass() == TrueToken.class) {
+            return this.booleanLiteral(true);
+        } else if (this.lookahead.getClass() == FalseToken.class) {
+            return this.booleanLiteral(false);
+        } else if (this.lookahead.getClass() == NullToken.class) {
+            return this.nullLiteral();
         }
 
         throw new SyntaxException("Literal: unexpected literal production");
+    }
+
+    private Literal booleanLiteral(boolean b) {
+        Class<? extends Token<Boolean>> tokenType = b ? TrueToken.class : FalseToken.class;
+        this.eat(tokenType);
+        return new BooleanLiteral(b);
+    }
+
+    private Literal nullLiteral() {
+        this.eat(NullToken.class);
+        return new NullLiteral(null);
     }
 
     /*
@@ -439,7 +469,7 @@ public class Parser {
         }
 
         if (!tokenType.isInstance(token)) {
-            throw new SyntaxException("Unexpected token: " + token.value() + ", expected: " + tokenType);
+            throw new SyntaxException("Unexpected token: " + token.value() + ", expected: " + tokenType.getSimpleName());
         }
 
         this.lookahead = this.tokenizer.getNextToken();
