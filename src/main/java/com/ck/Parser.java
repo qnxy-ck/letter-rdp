@@ -4,10 +4,7 @@ import com.ck.ast.*;
 import com.ck.ast.literal.*;
 import com.ck.ast.statement.*;
 import com.ck.token.*;
-import com.ck.token.keyword.ElseToken;
-import com.ck.token.keyword.IfToken;
-import com.ck.token.keyword.LetToken;
-import com.ck.token.keyword.NullToken;
+import com.ck.token.keyword.*;
 import com.ck.token.literal.IdentifierToken;
 import com.ck.token.literal.NumberToken;
 import com.ck.token.literal.StringToken;
@@ -69,7 +66,7 @@ public class Parser {
         final List<ASTree> statementList = new ArrayList<>();
         statementList.add(this.statement());
 
-        while (this.lookahead != null && this.lookahead.getClass() != stopLookahead) {
+        while (this.lookahead != null && !this.lookaheadEq(stopLookahead)) {
             statementList.add(this.statement());
         }
 
@@ -82,21 +79,119 @@ public class Parser {
             | BlockStatement
             | EmptyStatement
             | VariableStatement
-            | ifStatement
+            | IfStatement
+            | IterationStatement
             ;
      */
     private Statement statement() {
-        if (this.lookahead.getClass() == SemicolonToken.class) {
+        if (this.lookaheadEq(SemicolonToken.class)) {
             return this.emptyStatement();
-        } else if (this.lookahead.getClass() == OpenBraceToken.class) {
+        } else if (this.lookaheadEq(OpenBraceToken.class)) {
             return this.blockStatement();
-        } else if (this.lookahead.getClass() == LetToken.class) {
+        } else if (this.lookaheadEq(LetToken.class)) {
             return this.variableStatement();
-        } else if (this.lookahead.getClass() == IfToken.class) {
+        } else if (this.lookaheadEq(IfToken.class)) {
             return this.ifStatement();
+        } else if (this.lookahead instanceof IterationToken) {
+            return this.iterationStatement();
         } else {
             return this.expressionStatement();
         }
+    }
+
+    /*
+        IterationStatement
+            : WhileStatement
+            | DoWhileStatement
+            | ForStatement
+            ;
+     */
+    private Statement iterationStatement() {
+        if (this.lookaheadEq(WhileToken.class)) {
+            return this.whileStatement();
+        } else if (this.lookaheadEq(DoToken.class)) {
+            return this.doWhileStatement();
+        } else {
+            return this.forStatement();
+        }
+    }
+
+    /*
+        ForStatement
+            : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
+            ;
+     */
+    private Statement forStatement() {
+        this.eat(ForToken.class);
+        this.eat(OpenParenthesisToken.class);
+
+        ASTree init = this.lookaheadEq(SemicolonToken.class) ? null : this.forStatementInit();
+        this.eat(SemicolonToken.class);
+
+        ASTree test = this.lookaheadEq(SemicolonToken.class) ? null : this.expression();
+        this.eat(SemicolonToken.class);
+
+        ASTree update = this.lookaheadEq(ClosedParenthesisToken.class) ? null : this.expression();
+        this.eat(ClosedParenthesisToken.class);
+
+        Statement body = this.statement();
+
+        return new ForStatement(
+                init,
+                test,
+                update,
+                body
+        );
+    }
+
+    /*
+        ForStatementInit
+            : VariableStatementInit
+            | Expression
+            ;
+     */
+    private ASTree forStatementInit() {
+        if (this.lookaheadEq(LetToken.class)) {
+            return this.variableStatementInit();
+        }
+        return this.expression();
+    }
+
+    /*
+        DoWhileStatement
+            : 'do' Statement 'while' '(' Expression ')' ';'
+            ;
+     */
+    private Statement doWhileStatement() {
+        this.eat(DoToken.class);
+
+        Statement body = this.statement();
+
+        this.eat(WhileToken.class);
+
+        this.eat(OpenParenthesisToken.class);
+        ASTree test = this.expression();
+        this.eat(ClosedParenthesisToken.class);
+
+        this.eat(SemicolonToken.class);
+
+        return new DoWhileStatement(test, body);
+    }
+
+    /*
+        WhileStatement
+            : 'while' '(' Expression ')' Statement
+            ;
+     */
+    private Statement whileStatement() {
+        this.eat(WhileToken.class);
+
+        this.eat(OpenParenthesisToken.class);
+        ASTree test = this.expression();
+        this.eat(ClosedParenthesisToken.class);
+
+        Statement body = this.statement();
+        return new WhileStatement(test, body);
     }
 
     /*
@@ -115,7 +210,7 @@ public class Parser {
         Statement consequent = this.statement();
 
         Statement alternate = null;
-        if (this.lookahead != null && this.lookahead.getClass() == ElseToken.class) {
+        if (this.lookahead != null && this.lookaheadEq(ElseToken.class)) {
             this.eat(ElseToken.class);
             alternate = this.statement();
         }
@@ -128,16 +223,25 @@ public class Parser {
     }
 
     /*
+        VariableStatementInit
+            : 'let' VariableDeclarationList
+            ;
+     */
+    private VariableStatement variableStatementInit() {
+        this.eat(LetToken.class);
+        List<ASTree> list = this.variableDeclarationList();
+        return new VariableStatement(list);
+    }
+
+    /*
         VariableStatement
-            : 'let' VariableDeclarationList ';'
+            : VariableStatementInit ';'
             ;
      */
     private VariableStatement variableStatement() {
-        this.eat(LetToken.class);
-        List<ASTree> list = this.variableDeclarationList();
+        VariableStatement variableStatement = this.variableStatementInit();
         this.eat(SemicolonToken.class);
-
-        return new VariableStatement(list);
+        return variableStatement;
     }
 
     /*
@@ -150,7 +254,7 @@ public class Parser {
         List<ASTree> list = new ArrayList<>();
         list.add(this.variableDeclaration());
 
-        while (this.lookahead.getClass() == CommaToken.class) {
+        while (this.lookaheadEq(CommaToken.class)) {
             this.eat(CommaToken.class);
             list.add(this.variableDeclaration());
         }
@@ -165,9 +269,9 @@ public class Parser {
     private ASTree variableDeclaration() {
         Identifier id = this.identifier();
 
-        ASTree init = this.lookahead.getClass() != SemicolonToken.class && this.lookahead.getClass() != CommaToken.class
-                ? this.variableInitializer()
-                : null;
+        ASTree init = this.lookaheadEq(SemicolonToken.class) || this.lookaheadEq(CommaToken.class)
+                ? null
+                : this.variableInitializer();
 
         return new VariableDeclaration(id, init);
     }
@@ -200,7 +304,7 @@ public class Parser {
     private BlockStatement blockStatement() {
         this.eat(OpenBraceToken.class);
 
-        final List<ASTree> body = this.lookahead.getClass() == ClosedBraceToken.class
+        final List<ASTree> body = this.lookaheadEq(ClosedBraceToken.class)
                 ? List.of()
                 : this.statementList(ClosedBraceToken.class);
 
@@ -223,7 +327,7 @@ public class Parser {
 
     /*
         Expression
-            : AdditiveExpression
+            : AssignmentExpression
             ;
      */
     private ASTree expression() {
@@ -357,7 +461,7 @@ public class Parser {
     private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
         ASTree left = builderMethod.get();
 
-        while (this.lookahead.getClass() == operatorTokenType) {
+        while (this.lookaheadEq(operatorTokenType)) {
             OperatorToken operator = this.eat(operatorTokenType);
             ASTree right = builderMethod.get();
 
@@ -380,7 +484,7 @@ public class Parser {
     private ASTree logicalExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
         ASTree left = builderMethod.get();
 
-        while (this.lookahead.getClass() == operatorTokenType) {
+        while (this.lookaheadEq(operatorTokenType)) {
             OperatorToken operator = this.eat(operatorTokenType);
             ASTree right = builderMethod.get();
 
@@ -403,9 +507,9 @@ public class Parser {
      */
     private ASTree unaryExpression() {
         OperatorToken operator = null;
-        if (this.lookahead.getClass() == AdditiveOperatorToken.class) {
+        if (this.lookaheadEq(AdditiveOperatorToken.class)) {
             operator = this.eat(AdditiveOperatorToken.class);
-        } else if (this.lookahead.getClass() == LogicalNotToken.class) {
+        } else if (this.lookaheadEq(LogicalNotToken.class)) {
             operator = this.eat(LogicalNotToken.class);
         }
 
@@ -439,9 +543,9 @@ public class Parser {
     private ASTree primaryExpression() {
         if (this.lookahead instanceof LiteralToken<?>) {
             return this.literal();
-        } else if (this.lookahead.getClass() == OpenParenthesisToken.class) {
+        } else if (this.lookaheadEq(OpenParenthesisToken.class)) {
             return this.parenthesizedExpression();
-        } else if (this.lookahead.getClass() == IdentifierToken.class) {
+        } else if (this.lookaheadEq(IdentifierToken.class)) {
             return this.identifier();
         }
         return this.leftHandSideExpression();
@@ -471,11 +575,11 @@ public class Parser {
     private Literal literal() {
         if (this.lookahead instanceof BooleanLiteralToken) {
             return this.booleanLiteral(this.eat(BooleanLiteralToken.class).value());
-        } else if (this.lookahead.getClass() == NumberToken.class) {
+        } else if (this.lookaheadEq(NumberToken.class)) {
             return this.numericLiteral();
-        } else if (this.lookahead.getClass() == StringToken.class) {
+        } else if (this.lookaheadEq(StringToken.class)) {
             return this.stringLiteral();
-        } else if (this.lookahead.getClass() == NullToken.class) {
+        } else if (this.lookaheadEq(NullToken.class)) {
             return this.nullLiteral();
         }
 
@@ -521,6 +625,10 @@ public class Parser {
         StringToken token = this.eat(StringToken.class);
         return new StringLiteral(token.value().substring(1, token.value().length() - 1));
 
+    }
+
+    private <T extends Token<?>> boolean lookaheadEq(Class<T> tokenType) {
+        return lookahead.getClass() == tokenType;
     }
 
     private <T extends Token<?>> T eat(Class<T> tokenType) {

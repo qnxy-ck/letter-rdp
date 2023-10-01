@@ -52,6 +52,9 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\btrue\\b"), it -> TrueToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bfalse\\b"), it -> FalseToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bnull\\b"), it -> NullToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bwhile\\b"), it -> WhileToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bdo\\b"), it -> DoToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bfor\\b"), it -> ForToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:
