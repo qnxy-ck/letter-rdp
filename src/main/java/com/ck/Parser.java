@@ -252,15 +252,6 @@ public class Parser {
     }
 
     /*
-        LeftHandSideExpression
-            : Identifier
-            ;
-     */
-    private Identifier leftHandSideExpression() {
-        return this.identifier();
-    }
-
-    /*
         Identifier
             : IDENTIFIER
             ;
@@ -349,12 +340,12 @@ public class Parser {
 
     /*
         MultiplicativeExpression
-            : PrimaryExpression
-            | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+            : UnaryExpression
+            | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
             ;
      */
     private ASTree multiplicativeExpression() {
-        return this.binaryExpression(this::primaryExpression, MultiplicativeOperatorToken.class);
+        return this.binaryExpression(this::unaryExpression, MultiplicativeOperatorToken.class);
     }
 
     /**
@@ -381,7 +372,7 @@ public class Parser {
     }
 
     /**
-     * 构建二进制运算表达式
+     * 构建逻辑运算表达式
      *
      * @param builderMethod     构建数据
      * @param operatorTokenType 运算符类型
@@ -404,10 +395,45 @@ public class Parser {
     }
 
     /*
+        UnaryExpression
+            : LeftHandSideExpression
+            | ADDITIVE_OPERATOR UnaryExpression
+            | LOGICAL_NOT UnaryExpression
+            ;
+     */
+    private ASTree unaryExpression() {
+        OperatorToken operator = null;
+        if (this.lookahead.getClass() == AdditiveOperatorToken.class) {
+            operator = this.eat(AdditiveOperatorToken.class);
+        } else if (this.lookahead.getClass() == LogicalNotToken.class) {
+            operator = this.eat(LogicalNotToken.class);
+        }
+
+        if (operator != null) {
+            return new UnaryExpression(
+                    operator,
+                    this.unaryExpression()
+            );
+        }
+
+        return this.leftHandSideExpression();
+    }
+
+    /*
+       LeftHandSideExpression
+           : PrimaryExpression
+           ;
+    */
+    private ASTree leftHandSideExpression() {
+        return this.primaryExpression();
+    }
+
+
+    /*
         PrimaryExpression
             : Literal
             | ParenthesizedExpression
-            | LeftHandSideExpression
+            | Identifier
             ;
      */
     private ASTree primaryExpression() {
@@ -415,6 +441,8 @@ public class Parser {
             return this.literal();
         } else if (this.lookahead.getClass() == OpenParenthesisToken.class) {
             return this.parenthesizedExpression();
+        } else if (this.lookahead.getClass() == IdentifierToken.class) {
+            return this.identifier();
         }
         return this.leftHandSideExpression();
     }

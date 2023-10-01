@@ -85,6 +85,7 @@ public class Tokenizer {
             // 逻辑运算符 &&, ||
             new RegexpInfo(Pattern.compile("^&&"), it -> LogicalAndToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\|\\| "), it -> LogicalOrToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^!"), it -> LogicalNotToken.INSTANCE),
 
 
             // --------------------------------------------------
