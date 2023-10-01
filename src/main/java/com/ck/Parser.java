@@ -81,6 +81,8 @@ public class Parser {
             | VariableStatement
             | IfStatement
             | IterationStatement
+            | FunctionDeclaration
+            | ReturnStatement
             ;
      */
     private Statement statement() {
@@ -94,9 +96,71 @@ public class Parser {
             return this.ifStatement();
         } else if (this.lookahead instanceof IterationToken) {
             return this.iterationStatement();
+        } else if (this.lookaheadEq(DefToken.class)) {
+            return this.functionDeclaration();
+        } else if (this.lookaheadEq(ReturnToken.class)) {
+            return this.returnStatement();
         } else {
             return this.expressionStatement();
         }
+    }
+
+    /*
+        FunctionDeclaration
+            : 'def' Identifier '(' OptFormalParameterList ')' BlockStatement
+            ;
+        
+     */
+    private Statement functionDeclaration() {
+        this.eat(DefToken.class);
+        Identifier name = this.identifier();
+
+        this.eat(OpenParenthesisToken.class);
+
+        // OptFormalParameterList
+        List<ASTree> params = this.lookaheadEq(ClosedParenthesisToken.class)
+                ? List.of()
+                : this.formalParameterList();
+
+        this.eat(ClosedParenthesisToken.class);
+
+        BlockStatement body = this.blockStatement();
+        return new FunctionDeclaration(
+                name,
+                params,
+                body
+        );
+    }
+
+    /*
+        FormalParameterList
+            : Identifier
+            | FormalParameterList ',' Identifier
+            ;
+     */
+    private List<ASTree> formalParameterList() {
+        List<ASTree> params = new ArrayList<>();
+
+        params.add(this.identifier());
+        while (this.lookaheadEq(CommaToken.class)) {
+            this.eat(CommaToken.class);
+            params.add(this.identifier());
+        }
+
+        return params;
+    }
+
+    /*
+        ReturnStatement
+            : 'return' OptExpression ';'
+            ;
+     */
+    private Statement returnStatement() {
+        this.eat(ReturnToken.class);
+        ASTree argument = this.lookaheadEq(SemicolonToken.class) ? null : this.expression();
+
+        this.eat(SemicolonToken.class);
+        return new ReturnStatement(argument);
     }
 
     /*

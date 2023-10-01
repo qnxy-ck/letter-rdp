@@ -55,6 +55,8 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\bwhile\\b"), it -> WhileToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bdo\\b"), it -> DoToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bfor\\b"), it -> ForToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bdef\\b"), it -> DefToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\breturn\\b"), it -> ReturnToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:

@@ -1,9 +1,6 @@
-for(;;) ;
 
-for(let x = 0, y = 0; i < 10; i+=1) {
-    x += i;
-}
 
-for(y = 0; i < 10; i+=1) {
-    x += i;
+
+def f(x, y, z) {
+    
 }
