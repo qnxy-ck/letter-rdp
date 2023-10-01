@@ -1,7 +1,5 @@
-let x = 12, y;
-let y;
-let x, y;
-let c, b = 20;
-let x = 29;
-r = 22;
-let name = username = "ck";
+let x = 33;
+
+if(x) 
+    if(s) ;
+ else{}

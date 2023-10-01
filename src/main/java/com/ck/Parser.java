@@ -73,6 +73,7 @@ public class Parser {
             | BlockStatement
             | EmptyStatement
             | VariableStatement
+            | ifStatement
             ;
      */
     private Statement statement() {
@@ -82,9 +83,39 @@ public class Parser {
             return this.blockStatement();
         } else if (this.lookahead.getClass() == LetToken.class) {
             return this.variableStatement();
+        } else if (this.lookahead.getClass() == IfToken.class) {
+            return this.ifStatement();
         } else {
             return this.expressionStatement();
         }
+    }
+
+    /*
+        IfStatement
+            : 'if' '(' Expression ')' Statement
+            | 'if' '(' Expression ')' Statement 'else' Statement
+            ;
+     */
+    private Statement ifStatement() {
+        this.eat(IfToken.class);
+
+        this.eat(OpenParenthesisToken.class);
+        ASTree test = this.expression();
+        this.eat(ClosedParenthesisToken.class);
+
+        Statement consequent = this.statement();
+
+        Statement alternate = null;
+        if (this.lookahead != null && this.lookahead.getClass() == ElseToken.class) {
+            this.eat(ElseToken.class);
+            alternate = this.statement();
+        }
+
+        return new IfStatement(
+                test,
+                consequent,
+                alternate
+        );
     }
 
     /*

@@ -39,6 +39,8 @@ public class Tokenizer {
             // --------------------------------------------------
             // 关键字
             new RegexpInfo(Pattern.compile("^\\blet\\b"), it -> LetToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bif\\b"), it -> IfToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\belse\\b"), it -> ElseToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:
