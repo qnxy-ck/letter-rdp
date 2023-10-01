@@ -1,5 +1,7 @@
 package com.ck.ast;
 
+import com.ck.ast.literal.Identifier;
+
 /**
  * 变量定义
  *

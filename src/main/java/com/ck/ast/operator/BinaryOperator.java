@@ -1,6 +1,6 @@
-package com.ck.ast;
+package com.ck.ast.operator;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.ck.ast.Operator;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -9,7 +9,7 @@ import java.util.Optional;
  * @author 陈坤
  * 2023/10/1
  */
-public enum BinaryOperator {
+public enum BinaryOperator implements Operator {
 
     ADDITION("+"),
     SUBTRACTION("-"),
@@ -17,8 +17,7 @@ public enum BinaryOperator {
     DIVISION("/"),
     ;
 
-    @JsonValue
-    public final String operator;
+    private final String operator;
 
     BinaryOperator(String operator) {
         this.operator = operator;
@@ -28,5 +27,10 @@ public enum BinaryOperator {
         return Arrays.stream(values())
                 .filter(it -> it.operator.equals(operator))
                 .findFirst();
+    }
+
+    @Override
+    public String operator() {
+        return this.operator;
     }
 }

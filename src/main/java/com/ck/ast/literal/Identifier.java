@@ -1,4 +1,6 @@
-package com.ck.ast;
+package com.ck.ast.literal;
+
+import com.ck.ast.ASTree;
 
 /**
  * 标识符

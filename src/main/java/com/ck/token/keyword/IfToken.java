@@ -1,4 +1,6 @@
-package com.ck.token;
+package com.ck.token.keyword;
+
+import com.ck.token.KeywordToken;
 
 /**
  * @author 陈坤

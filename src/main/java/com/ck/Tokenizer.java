@@ -1,6 +1,14 @@
 package com.ck;
 
-import com.ck.token.*;
+import com.ck.token.Token;
+import com.ck.token.keyword.ElseToken;
+import com.ck.token.keyword.IfToken;
+import com.ck.token.keyword.LetToken;
+import com.ck.token.literal.IdentifierToken;
+import com.ck.token.literal.NumberToken;
+import com.ck.token.literal.StringToken;
+import com.ck.token.operator.*;
+import com.ck.token.symbol.*;
 
 import java.util.regex.Pattern;
 
@@ -60,6 +68,11 @@ public class Tokenizer {
             // 数学运算符: +, -, *, /
             new RegexpInfo(Pattern.compile("^[+-]"), AdditiveOperatorToken::new),
             new RegexpInfo(Pattern.compile("^[*/]"), MultiplicativeOperatorToken::new),
+
+            // --------------------------------------------------
+            // 关系运算符 >, >=, <, <=
+            new RegexpInfo(Pattern.compile("^[><]=?"), RelationalOperatorToken::new),
+
 
             // --------------------------------------------------
             // 字符串:

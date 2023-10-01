@@ -1,4 +1,7 @@
-package com.ck.ast;
+package com.ck.ast.statement;
+
+import com.ck.ast.ASTree;
+import com.ck.ast.Statement;
 
 import java.util.List;
 

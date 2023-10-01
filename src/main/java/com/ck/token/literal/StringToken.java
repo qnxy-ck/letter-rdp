@@ -1,4 +1,6 @@
-package com.ck.token;
+package com.ck.token.literal;
+
+import com.ck.token.Token;
 
 /**
  * 字符串Token

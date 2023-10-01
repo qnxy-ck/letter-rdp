@@ -1,4 +1,6 @@
-package com.ck.token;
+package com.ck.token.symbol;
+
+import com.ck.token.Token;
 
 /**
  * 右括号
@@ -6,7 +8,7 @@ package com.ck.token;
  * @author 陈坤
  * 2023/10/1
  */
-public class ClosedParenthesisToken implements Token<String>{
+public class ClosedParenthesisToken implements Token<String> {
     
     public static final ClosedParenthesisToken INSTANCE = new ClosedParenthesisToken();
 

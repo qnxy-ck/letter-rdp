@@ -1,4 +1,6 @@
-package com.ck.ast;
+package com.ck.ast.literal;
+
+import com.ck.ast.Literal;
 
 /**
  * 数字字面量

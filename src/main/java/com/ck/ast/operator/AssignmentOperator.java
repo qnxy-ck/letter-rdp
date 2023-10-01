@@ -1,6 +1,6 @@
-package com.ck.ast;
+package com.ck.ast.operator;
 
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.ck.ast.Operator;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import java.util.Optional;
  * @author 陈坤
  * 2023/10/1
  */
-public enum AssignmentOperator {
+public enum AssignmentOperator implements Operator {
 
     SIMPLE_ASSIGN("="),
     MUL_ASSIGN("*="),
@@ -20,8 +20,7 @@ public enum AssignmentOperator {
     SUB_ASSIGN("-="),
 
     ;
-    @JsonValue
-    public final String operator;
+    private final String operator;
 
     AssignmentOperator(String operator) {
         this.operator = operator;
@@ -31,5 +30,10 @@ public enum AssignmentOperator {
         return Arrays.stream(values())
                 .filter(it -> it.operator.equals(operator))
                 .findFirst();
+    }
+
+    @Override
+    public String operator() {
+        return this.operator;
     }
 }

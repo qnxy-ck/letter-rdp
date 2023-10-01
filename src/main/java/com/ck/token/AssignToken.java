@@ -1,6 +1,6 @@
 package com.ck.token;
 
-import com.ck.ast.AssignmentOperator;
+import com.ck.ast.operator.AssignmentOperator;
 
 /**
  * 赋值运算符 抽象接口

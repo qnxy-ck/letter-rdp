@@ -1,14 +1,13 @@
 package com.ck.token;
 
-import com.ck.ast.BinaryOperator;
+import com.ck.ast.Operator;
 
 /**
  * @author 陈坤
  * 2023/10/1
  */
-public interface OperatorToken extends Token<String> {
+public interface OperatorToken<T extends Operator> extends Token<String> {
 
-    default BinaryOperator toBinaryOperator() {
-        return BinaryOperator.operatorOf(this.value()).orElseThrow();
-    }
+    T toOperatorEnum();
+
 }

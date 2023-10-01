@@ -1,4 +1,6 @@
-package com.ck.token;
+package com.ck.token.operator;
+
+import com.ck.token.AssignToken;
 
 /**
  * 复杂赋值运算符

@@ -5,7 +5,7 @@ package com.ck.ast;
  * 2023/10/1
  */
 public record BinaryExpression(
-        BinaryOperator operator,
+        Operator operator,
         ASTree left,
         ASTree right
 ) implements ASTree {

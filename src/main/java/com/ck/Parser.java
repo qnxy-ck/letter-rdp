@@ -1,7 +1,21 @@
 package com.ck;
 
 import com.ck.ast.*;
-import com.ck.token.*;
+import com.ck.ast.literal.Identifier;
+import com.ck.ast.literal.NumericLiteral;
+import com.ck.ast.literal.StringLiteral;
+import com.ck.ast.statement.*;
+import com.ck.token.AssignToken;
+import com.ck.token.OperatorToken;
+import com.ck.token.Token;
+import com.ck.token.keyword.ElseToken;
+import com.ck.token.keyword.IfToken;
+import com.ck.token.keyword.LetToken;
+import com.ck.token.literal.IdentifierToken;
+import com.ck.token.literal.NumberToken;
+import com.ck.token.literal.StringToken;
+import com.ck.token.operator.*;
+import com.ck.token.symbol.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -223,12 +237,12 @@ public class Parser {
 
     /*
         AssignmentExpression
-            : AdditiveExpression
+            : RelationalExpression
             | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
             ;
      */
     private ASTree assignmentExpression() {
-        ASTree left = this.additiveExpression();
+        ASTree left = this.relationalExpression();
 
         // 如果下一个Token不是赋值运算符直接返回
         if (!this.isAssignmentOperator(this.lookahead.getClass())) {
@@ -294,6 +308,16 @@ public class Parser {
     }
 
     /*
+        RelationalExpression
+            : AdditiveExpression
+            | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
+            ;
+     */
+    private ASTree relationalExpression() {
+        return this.binaryExpression(this::additiveExpression, RelationalOperatorToken.class);
+    }
+
+    /*
         AdditiveExpression
             : MultiplicativeExpression
             | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
@@ -319,15 +343,15 @@ public class Parser {
      * @param builderMethod     方法名称
      * @param operatorTokenType 运算符类型
      */
-    private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken> operatorTokenType) {
+    private ASTree binaryExpression(Supplier<ASTree> builderMethod, Class<? extends OperatorToken<? extends Operator>> operatorTokenType) {
         ASTree left = builderMethod.get();
 
         while (this.lookahead.getClass() == operatorTokenType) {
-            OperatorToken operator = this.eat(operatorTokenType);
+            OperatorToken<?> operator = this.eat(operatorTokenType);
             ASTree right = builderMethod.get();
 
             left = new BinaryExpression(
-                    operator.toBinaryOperator(),
+                    operator.toOperatorEnum(),
                     left,
                     right
             );

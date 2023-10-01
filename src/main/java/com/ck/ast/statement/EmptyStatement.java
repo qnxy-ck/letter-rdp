@@ -1,4 +1,6 @@
-package com.ck.ast;
+package com.ck.ast.statement;
+
+import com.ck.ast.Statement;
 
 /**
  * 空语句
