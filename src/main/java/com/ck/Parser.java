@@ -83,6 +83,7 @@ public class Parser {
             | IterationStatement
             | FunctionDeclaration
             | ReturnStatement
+            | ClassDeclaration
             ;
      */
     private Statement statement() {
@@ -100,9 +101,40 @@ public class Parser {
             return this.functionDeclaration();
         } else if (this.lookaheadEq(ReturnToken.class)) {
             return this.returnStatement();
+        } else if (this.lookaheadEq(ClassToken.class)) {
+            return this.classDeclaration();
         } else {
             return this.expressionStatement();
         }
+    }
+
+    /*
+        ClassDeclaration
+            : 'class' Identifier OptClassExtends BlockStatement
+            ;
+     */
+    private Statement classDeclaration() {
+        this.eat(ClassToken.class);
+        Identifier id = this.identifier();
+
+        Identifier superClass = this.lookaheadEq(ExtendsToken.class) ? this.clasExtends() : null;
+        BlockStatement body = this.blockStatement();
+
+        return new ClassDeclaration(
+                id,
+                superClass,
+                body
+        );
+    }
+
+    /*
+        ClasExtends
+            : 'extends' Identifier
+            ;
+     */
+    private Identifier clasExtends() {
+        this.eat(ExtendsToken.class);
+        return this.identifier();
     }
 
     /*
@@ -603,6 +635,10 @@ public class Parser {
             ;
      */
     private ASTree callMemberExpression() {
+        if (this.lookaheadEq(SuperToken.class)) {
+            return this.callExpression(this.superAst());
+        }
+
         ASTree member = this.memberExpression();
 
         if (this.lookaheadEq(OpenParenthesisToken.class)) {
@@ -711,6 +747,8 @@ public class Parser {
             : Literal
             | ParenthesizedExpression
             | Identifier
+            | ThisExpression
+            | NewExpression
             ;
      */
     private ASTree primaryExpression() {
@@ -720,8 +758,47 @@ public class Parser {
             return this.parenthesizedExpression();
         } else if (this.lookaheadEq(IdentifierToken.class)) {
             return this.identifier();
+        } else if (this.lookaheadEq(ThisToken.class)) {
+            return this.thisExpression();
+        } else if (this.lookaheadEq(NewToken.class)) {
+            return this.newExpression();
         }
-        return this.leftHandSideExpression();
+
+        throw new SyntaxException("Unexpected primary expression.");
+    }
+
+    /*
+        NewExpression
+            : 'new' MemberExpression Arguments
+            ;
+     */
+    private ASTree newExpression() {
+        this.eat(NewToken.class);
+
+        return new NewExpression(
+                this.memberExpression(),
+                this.arguments()
+        );
+    }
+
+    /*
+        ThisExpression
+            : 'this'
+            ;
+     */
+    private ASTree thisExpression() {
+        this.eat(ThisToken.class);
+        return ThisExpression.INSTANCE;
+    }
+
+    /*
+        Super
+            : 'super'
+            ;
+     */
+    private ASTree superAst() {
+        this.eat(SuperToken.class);
+        return Super.INSTANCE;
     }
 
     /*

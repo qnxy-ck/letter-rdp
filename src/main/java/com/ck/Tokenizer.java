@@ -60,6 +60,11 @@ public class Tokenizer {
             new RegexpInfo(Pattern.compile("^\\bfor\\b"), it -> ForToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\bdef\\b"), it -> DefToken.INSTANCE),
             new RegexpInfo(Pattern.compile("^\\breturn\\b"), it -> ReturnToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bclass\\b"), it -> ClassToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bextends\\b"), it -> ExtendsToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bsuper\\b"), it -> SuperToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bnew\\b"), it -> NewToken.INSTANCE),
+            new RegexpInfo(Pattern.compile("^\\bthis\\b"), it -> ThisToken.INSTANCE),
 
             // --------------------------------------------------
             // 数字:

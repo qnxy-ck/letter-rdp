@@ -1,18 +1,30 @@
-let s = "test";
+class P {
 
-let i = 0;
-while(i < s.length) {
-    s[i];
-    // da
-    i += 1;
+    def constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    def calc() {
+        return this.x + this.y;
+    }
+    
 }
 
-a.b.c[d];
+class A extends  P {
 
-a.x = 10;
+    def constructor(x, y, z) {
+        super(x, y);
+        this.z = z;
+    }
+    
+    def calc() {
+        return super() + this.z;
+    }
+    
+}
 
-test();
+let p = new A(10, 20, 30);
+p.calc();
 
-obj.test(x, y);
-
-call(x)();
+new A[10](33);
