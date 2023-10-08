@@ -505,7 +505,7 @@ public class Parser {
         
         EqualityExpression
             : RelationalExpression
-            | EqualityExpression ADDITIVE_OPERATOR RelationalExpression
+            | EqualityExpression EQUALITY_OPERATOR RelationalExpression
             ;
      */
     private ASTree equalityExpression() {
